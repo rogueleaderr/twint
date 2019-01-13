@@ -16,11 +16,13 @@ from . import run
 from . import config
 from . import storage
 
+
 def error(_error, message):
     """ Print errors to stdout
     """
     print("[-] {}: {}".format(_error, message))
     sys.exit(0)
+
 
 def check(args):
     """ Error checking
@@ -41,6 +43,7 @@ def check(args):
         elif args.json:
             error("Error", "Please specify an output file (Example: -o file.json).")
 
+
 def loadUserList(ul, _type):
     """ Concatenate users
     """
@@ -54,6 +57,7 @@ def loadUserList(ul, _type):
             un += "%20OR%20from%3A" + user
         return un[15:]
     return userlist
+
 
 def initialize(args):
     """ Set default values for config from args
@@ -107,6 +111,7 @@ def initialize(args):
     c.Retweets = args.retweets
     c.Get_replies = args.get_replies
     return c
+
 
 def options():
     """ Parse arguments
@@ -189,6 +194,7 @@ def options():
 
     return args
 
+
 def main():
     """ Main
     """
@@ -253,6 +259,7 @@ def main():
             run.Lookup(c)
     else:
         run.Search(c)
+
 
 def run_as_command():
     version = ".".join(str(v) for v in sys.version_info[:2])

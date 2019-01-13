@@ -1,14 +1,14 @@
-from . import datelock, feed, get, output, verbose, storage
-from asyncio import get_event_loop, TimeoutError
-from datetime import timedelta, datetime
-from .storage import db
 import sys
+from asyncio import get_event_loop, TimeoutError
+from datetime import timedelta
 
-#import logging
+from . import datelock, feed, get, output, verbose, storage
+from .storage import db
+
 
 class Twint:
     def __init__(self, config):
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+__init__')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+__init__')
         if config.Resume is not None and config.TwitterSearch:
             self.init = f"TWEET-{config.Resume}-0"
         else:
@@ -35,7 +35,7 @@ class Twint:
                 self.config.Timedelta = (self.d._until - self.d._since).days
 
     async def Feed(self):
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+Feed')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+Feed')
         consecutive_errors_count = 0
         while True:
             response = await get.RequestUrl(self.config, self.init, headers=[("User-Agent", self.user_agent)])
@@ -61,7 +61,8 @@ class Twint:
                     print("[?] Timed out, changing Tor identity...")
                     if self.config.Tor_control_password is None:
                         sys.stderr.write("Error: config.Tor_control_password must be set for proxy autorotation!\r\n")
-                        sys.stderr.write("Info: What is it? See https://stem.torproject.org/faq.html#can-i-interact-with-tors-controller-interface-directly\r\n")
+                        sys.stderr.write(
+                            "Info: What is it? See https://stem.torproject.org/faq.html#can-i-interact-with-tors-controller-interface-directly\r\n")
                         break
                     else:
                         get.ForceNewTorIdentity(self.config)
@@ -77,11 +78,12 @@ class Twint:
                     self.user_agent = await get.RandomUserAgent()
                     continue
                 print(str(e) + " [x] run.Feed")
-                print("[!] if get this error but you know for sure that more tweets exist, please open an issue and we will investigate it!")
+                print(
+                    "[!] if get this error but you know for sure that more tweets exist, please open an issue and we will investigate it!")
                 break
 
     async def follow(self):
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+follow')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+follow')
         await self.Feed()
         if self.config.User_full:
             self.count += await get.Multi(self.feed, self.config, self.conn)
@@ -92,12 +94,12 @@ class Twint:
                 await output.Username(username, self.config, self.conn)
 
     async def favorite(self):
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+favorite')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+favorite')
         await self.Feed()
         self.count += await get.Multi(self.feed, self.config, self.conn)
 
     async def profile(self):
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+profile')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+profile')
         await self.Feed()
         if self.config.Profile_full:
             self.count += await get.Multi(self.feed, self.config, self.conn)
@@ -107,7 +109,7 @@ class Twint:
                 await output.Tweets(tweet, "", self.config, self.conn)
 
     async def tweets(self):
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+tweets')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+tweets')
         await self.Feed()
         if self.config.Location:
             self.count += await get.Multi(self.feed, self.config, self.conn)
@@ -118,11 +120,11 @@ class Twint:
 
     async def main(self):
         self.user_agent = await get.RandomUserAgent()
-        #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+main')
+        # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+main')
         if self.config.User_id is not None:
             self.config.Username = await get.Username(self.config.User_id)
 
-        #if self.config.Username is not None:
+        # if self.config.Username is not None:
         #    url = f"http://twitter.com/{self.config.Username}?lang=en"
         #    self.config.User_id = await get.User(url, self.config, self.conn, True)
         # TODO: keep this or not!?
@@ -138,7 +140,7 @@ class Twint:
                     self.d._until = self.d._until - _days
                     self.feed = [-1]
 
-                #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+main+CallingGetLimit1')
+                # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+main+CallingGetLimit1')
                 if get.Limit(self.config.Limit, self.count):
                     self.d._until = self.d._until - _days
                     self.feed = [-1]
@@ -156,24 +158,27 @@ class Twint:
                 else:
                     break
 
-                #logging.info("[<] " + str(datetime.now()) + ':: run+Twint+main+CallingGetLimit2')
+                # logging.info("[<] " + str(datetime.now()) + ':: run+Twint+main+CallingGetLimit2')
                 if get.Limit(self.config.Limit, self.count):
                     break
 
         if self.config.Count:
             verbose.Count(self.count, self.config)
 
+
 def run(config):
-    #logging.info("[<] " + str(datetime.now()) + ':: run+run')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+run')
     get_event_loop().run_until_complete(Twint(config).main())
 
+
 def Favorites(config):
-    #logging.info("[<] " + str(datetime.now()) + ':: run+Favorites')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+Favorites')
     config.Favorites = True
     run(config)
 
+
 def Followers(config):
-    #logging.info("[<] " + str(datetime.now()) + ':: run+Followers')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+Followers')
     output.clean_follow_list()
     config.Followers = True
     config.Following = False
@@ -185,8 +190,9 @@ def Followers(config):
     if config.Pandas:
         storage.panda.clean()
 
+
 def Following(config):
-    #logging.info("[<] " + str(datetime.now()) + ':: run+Following')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+Following')
     output.clean_follow_list()
     config.Following = True
     config.Followers = False
@@ -198,18 +204,21 @@ def Following(config):
     if config.Pandas:
         storage.panda.clean()
 
+
 def Lookup(config):
-    #logging.info("[<] " + str(datetime.now()) + ':: run+Lookup')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+Lookup')
     url = f"http://twitter.com/{config.Username}?lang=en"
     get_event_loop().run_until_complete(get.User(url, config, db.Conn(config.Database)))
 
+
 def Profile(config):
     config.Profile = True
-    #logging.info("[<] " + str(datetime.now()) + ':: run+Profile')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+Profile')
     run(config)
 
+
 def Search(config):
-    #logging.info("[<] " + str(datetime.now()) + ':: run+Search')
+    # logging.info("[<] " + str(datetime.now()) + ':: run+Search')
     config.TwitterSearch = True
     config.Following = False
     config.Followers = False

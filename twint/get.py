@@ -12,11 +12,12 @@ from aiohttp_socks import SocksConnector, SocksVer
 
 from . import url
 from .output import Tweets, Users
-from .user import inf
+from .user import infer
 
-#import logging
+# import logging
 
 httpproxy = None
+
 
 def get_connector(config):
     _connector = None
@@ -55,8 +56,8 @@ def get_connector(config):
     return _connector
 
 
-async def RequestUrl(config, init, headers = []):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+requestURL')
+async def RequestUrl(config, init, headers=[]):
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+requestURL')
     _connector = get_connector(config)
 
     if config.Profile:
@@ -83,14 +84,16 @@ async def RequestUrl(config, init, headers = []):
 
     return response
 
+
 async def MobileRequest(url, **options):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+MobileRequest')
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+MobileRequest')
     connector = options.get("connector")
     if connector:
         async with aiohttp.ClientSession(connector=connector) as session:
             return await Response(session, url)
     async with aiohttp.ClientSession() as session:
         return await Response(session, url)
+
 
 def ForceNewTorIdentity(config):
     try:
@@ -103,19 +106,22 @@ def ForceNewTorIdentity(config):
         sys.stderr.write('Error connecting to Tor control port: {}\n'.format(repr(e)))
         sys.stderr.write('If you want to rotate Tor ports automatically - enable Tor control port\n')
 
+
 async def Request(url, connector=None, params=[], headers=[]):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+Request')
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+Request')
     if connector:
         async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
             return await Response(session, url, params)
     async with aiohttp.ClientSession() as session:
         return await Response(session, url, params)
 
+
 async def Response(session, url, params=[]):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+Response')
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+Response')
     with timeout(30):
         async with session.get(url, ssl=False, params=params, proxy=httpproxy) as response:
             return await response.text()
+
 
 async def RandomUserAgent():
     url = "https://fake-useragent.herokuapp.com/browsers/0.1.8"
@@ -123,16 +129,18 @@ async def RandomUserAgent():
     browsers = loads(r)['browsers']
     return random.choice(browsers[random.choice(list(browsers))])
 
+
 async def Username(_id):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+Username')
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+Username')
     url = f"https://twitter.com/intent/user?user_id={_id}&lang=en"
     r = await Request(url)
     soup = BeautifulSoup(r, "html.parser")
 
     return soup.find("a", "fn url alternate-context")["href"].replace("/", "")
 
+
 async def Tweet(url, config, conn):
-    #loggin.info("[<] " + str(datetime.now()) + ':: Tweet')
+    # loggin.info("[<] " + str(datetime.now()) + ':: Tweet')
     try:
         response = await Request(url)
         soup = BeautifulSoup(response, "html.parser")
@@ -143,25 +151,28 @@ async def Tweet(url, config, conn):
     except Exception as e:
         print(str(e) + " [x] get.Tweet")
 
-async def User(url, config, conn, user_id = False):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+User')
+
+async def User(url, config, conn, user_id=False):
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+User')
     _connector = get_connector(config)
     try:
         response = await Request(url, connector=_connector)
         soup = BeautifulSoup(response, "html.parser")
         await Users(soup, config, conn)
         if user_id:
-            return int(inf(soup, "id"))
+            return int(infer(soup, "id"))
     except Exception as e:
         print(str(e) + " [x] get.User")
 
+
 def Limit(Limit, count):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+Limit')
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+Limit')
     if Limit is not None and count >= int(Limit):
         return True
 
+
 async def Multi(feed, config, conn):
-    #loggin.info("[<] " + str(datetime.now()) + ':: get+Multi')
+    # loggin.info("[<] " + str(datetime.now()) + ':: get+Multi')
     count = 0
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
@@ -181,10 +192,10 @@ async def Multi(feed, config, conn):
 
                 if config.User_full:
                     futures.append(loop.run_in_executor(executor, await User(url,
-                        config, conn)))
+                                                                             config, conn)))
                 else:
                     futures.append(loop.run_in_executor(executor, await Tweet(url,
-                        config, conn)))
+                                                                              config, conn)))
 
             await asyncio.gather(*futures)
     except Exception as e:

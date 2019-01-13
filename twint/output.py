@@ -4,7 +4,7 @@ from .user import User
 from datetime import datetime
 from .storage import db, elasticsearch, write, panda
 
-#import logging
+# import logging
 
 follow_object = {}
 tweets_object = []
@@ -15,13 +15,15 @@ author_list.pop()
 
 _follow_list = []
 
+
 def clean_follow_list():
-    #logging.info("[<] " + str(datetime.now()) + ':: output+clean_follow_list')
+    # logging.info("[<] " + str(datetime.now()) + ':: output+clean_follow_list')
     global _follow_list
     _follow_list = []
 
+
 def datecheck(datestamp, config):
-    #logging.info("[<] " + str(datetime.now()) + ':: output+datecheck')
+    # logging.info("[<] " + str(datetime.now()) + ':: output+datecheck')
     if config.Since and config.Until:
         d = int(datestamp.replace("-", ""))
         s = int(config.Since.replace("-", ""))
@@ -29,16 +31,18 @@ def datecheck(datestamp, config):
             return False
     return True
 
+
 def is_tweet(tw):
-    #logging.info("[<] " + str(datetime.now()) + ':: output+is_tweet')
+    # logging.info("[<] " + str(datetime.now()) + ':: output+is_tweet')
     try:
         tw["data-item-id"]
         return True
     except:
         return False
 
+
 def _output(obj, output, config, **extra):
-    #logging.info("[<] " + str(datetime.now()) + ':: output+_output')
+    # logging.info("[<] " + str(datetime.now()) + ':: output+_output')
     if config.Lowercase:
         if isinstance(obj, str):
             obj = obj.lower()
@@ -56,7 +60,7 @@ def _output(obj, output, config, **extra):
             return
     if config.Output != None:
         if config.Store_csv:
-            try :
+            try:
                 write.Csv(obj, config)
             except Exception as e:
                 print(str(e) + " [x] output._output")
@@ -69,7 +73,7 @@ def _output(obj, output, config, **extra):
         panda.update(obj, config)
     if extra.get("follow_list"):
         follow_object.username = config.Username
-        follow_object.action = config.Following*"following" + config.Followers*"followers"
+        follow_object.action = config.Following * "following" + config.Followers * "followers"
         follow_object.users = _follow_list
         panda.update(follow_object, config.Essid)
     if config.Elasticsearch:
@@ -80,6 +84,7 @@ def _output(obj, output, config, **extra):
                 print(output)
             except UnicodeEncodeError:
                 print("unicode error [x] output._output")
+
 
 async def checkData(tweet, location, config, conn):
     usernames = []
@@ -108,6 +113,7 @@ async def checkData(tweet, location, config, conn):
 
             _output(tweet, output, config)
 
+
 async def Tweets(tweets, location, config, conn, url=''):
     if (config.Profile_full or config.Location) and config.Get_replies:
         for tw in tweets:
@@ -117,13 +123,14 @@ async def Tweets(tweets, location, config, conn, url=''):
             if tw['data-item-id'] == url.split('?')[0].split('/')[-1]:
                 await checkData(tw, location, config, conn)
     elif config.TwitterSearch:
-            await checkData(tweets, location, config, conn)
+        await checkData(tweets, location, config, conn)
     else:
         if int(tweets["data-user-id"]) == config.User_id:
             await checkData(tweets, location, config, conn)
 
+
 async def Users(u, config, conn):
-    #logging.info("[<] " + str(datetime.now()) + ':: output+Users')
+    # logging.info("[<] " + str(datetime.now()) + ':: output+Users')
     global user_object
 
     user = User(u)
@@ -142,14 +149,15 @@ async def Users(u, config, conn):
         user.join_time = _save_time
 
     if config.Store_object:
-        user_object.append(user) # twint.user.user
+        user_object.append(user)  # twint.user.user
 
     _output(user, output, config)
 
+
 async def Username(username, config, conn):
-    #logging.info("[<] " + str(datetime.now()) + ':: output+Username')
+    # logging.info("[<] " + str(datetime.now()) + ':: output+Username')
     global follow_object
-    follow_var = config.Following*"following" + config.Followers*"followers"
+    follow_var = config.Following * "following" + config.Followers * "followers"
 
     if config.Database:
         db.follow(conn, config.Username, config.Followers, username)

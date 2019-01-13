@@ -4,10 +4,11 @@ class user:
     def __init__(self):
         pass
 
-def inf(ur, _type):
+
+def infer(ur, _type):
     try:
         group = ur.find("div", "user-actions btn-group not-following")
-        if group == None :
+        if group == None:
             group = ur.find("div", "user-actions btn-group not-following protected")
     except Exception as e:
         print("Error: " + str(e))
@@ -26,6 +27,7 @@ def inf(ur, _type):
             ret = 0
 
     return ret
+
 
 def card(ur, _type):
     if _type == "bio":
@@ -47,50 +49,55 @@ def card(ur, _type):
 
     return ret
 
+
 def join(ur):
     jd = ur.find("span", "ProfileHeaderCard-joinDateText js-tooltip u-dir")["title"]
     return jd.split(" - ")
 
+
 def convertToInt(x):
     multDict = {
-        "k" : 1000,
-        "m" : 1000000,
-        "b" : 1000000000,
+        "k": 1000,
+        "m": 1000000,
+        "b": 1000000000,
     }
-    try :
+    try:
         if ',' in x:
             x = x.replace(',', '')
         y = int(x)
         return y
-    except :
+    except:
         pass
 
-    try :
+    try:
         y = float(str(x)[:-1])
         y = y * multDict[str(x)[-1:].lower()]
         return int(y)
-    except :
+    except:
         pass
 
     return 0
 
+
 def stat(ur, _type):
     _class = f"ProfileNav-item ProfileNav-item--{_type}"
     stat = ur.find("li", _class)
-    try :
+    try:
         r = stat.find("span", "ProfileNav-value")["data-count"]
     except AttributeError:
         r = "0"
     return r
 
+
 def media(ur):
     try:
-      media_count = ur.find("a", "PhotoRail-headingWithCount js-nav").text.strip().split(" ")[0]
-      media_count = convertToInt(media_count)
+        media_count = ur.find("a", "PhotoRail-headingWithCount js-nav").text.strip().split(" ")[0]
+        media_count = convertToInt(media_count)
     except:
-      media_count = 0
+        media_count = 0
 
     return media_count
+
 
 def verified(ur):
     try:
@@ -104,13 +111,14 @@ def verified(ur):
 
     return is_verified
 
+
 def User(ur):
     u = user()
     for img in ur.findAll("img", "Emoji Emoji--forText"):
         img.replaceWith(img["alt"])
-    u.id = inf(ur, "id")
-    u.name = inf(ur, "name")
-    u.username = inf(ur, "username")
+    u.id = infer(ur, "id")
+    u.name = infer(ur, "name")
+    u.username = infer(ur, "username")
     u.bio = card(ur, "bio")
     u.location = card(ur, "location")
     u.url = card(ur, "url")
@@ -121,8 +129,8 @@ def User(ur):
     u.followers = stat(ur, "followers")
     u.likes = stat(ur, "favorites")
     u.media_count = media(ur)
-    u.is_private = inf(ur, "private")
+    u.is_private = infer(ur, "private")
     u.is_verified = verified(ur)
     u.avatar = ur.find("img", "ProfileAvatar-image")["src"]
-    u.background_image = ur.find('div',{'class':'ProfileCanopy-headerBg'}).find('img').get('src')
+    u.background_image = ur.find('div', {'class': 'ProfileCanopy-headerBg'}).find('img').get('src')
     return u

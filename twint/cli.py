@@ -221,6 +221,7 @@ def main():
                 run.Favorites(c)
         else:
             run.Favorites(c)
+
     elif args.following:
         if args.userlist:
             _userlist = loadUserList(args.userlist, "following")
@@ -230,6 +231,7 @@ def main():
                 run.Following(c)
         else:
             run.Following(c)
+
     elif args.followers:
         if args.userlist:
             _userlist = loadUserList(args.userlist, "followers")
@@ -239,6 +241,7 @@ def main():
                 run.Followers(c)
         else:
             run.Followers(c)
+
     elif args.retweets or args.profile_full:
         if args.userlist:
             _userlist = loadUserList(args.userlist, "profile")
@@ -248,6 +251,7 @@ def main():
                 run.Profile(c)
         else:
             run.Profile(c)
+
     elif args.user_full:
         if args.userlist:
             _userlist = loadUserList(args.userlist, "userlist")
